@@ -8,12 +8,14 @@ public class UsageError {
     final EDIReference typeReference;
     final EDIStreamValidationError error;
     final int depth;
+    final String expectedValue;
 
     UsageError(EDIReference typeReference, EDIStreamValidationError error, int depth) {
         super();
         this.typeReference = typeReference;
         this.error = error;
         this.depth = depth;
+        this.expectedValue = null;
     }
 
     UsageError(EDIStreamValidationError error) {
@@ -21,13 +23,19 @@ public class UsageError {
         this.error = error;
         this.typeReference = null;
         this.depth = -1;
+        this.expectedValue = null;
     }
 
     UsageError(UsageNode node, EDIStreamValidationError error) {
+        this(node, error, null);
+    }
+
+    UsageError(UsageNode node, EDIStreamValidationError error, String expectedValue) {
         super();
         this.typeReference = node.getLink();
         this.depth = node.getDepth();
         this.error = error;
+        this.expectedValue = expectedValue;
     }
 
     boolean isDepthGreaterThan(int depth) {
@@ -44,5 +52,9 @@ public class UsageError {
 
     public EDIStreamValidationError getError() {
         return error;
+    }
+
+    public String getExpectedValue() {
+        return expectedValue;
     }
 }

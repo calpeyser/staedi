@@ -313,6 +313,36 @@ public interface EDIStreamReader extends Closeable, EDIStreamConstants {
     EDIStreamValidationError getErrorType();
 
     /**
+     * Returns the value the reader expected to find where the current error
+     * occurred, when the reader computed that value from the data stream
+     * rather than taking it from the schema. Calls to this method are only
+     * valid when the current event type is SEGMENT_ERROR or ELEMENT_ERROR.
+     *
+     * <ul>
+     * <li>{@link EDIStreamValidationError#CONTROL_COUNT_DOES_NOT_MATCH_ACTUAL_COUNT
+     * CONTROL_COUNT_DOES_NOT_MATCH_ACTUAL_COUNT}: the count of segments,
+     * transactions or groups that the reader counted
+     * <li>{@link EDIStreamValidationError#CONTROL_REFERENCE_MISMATCH
+     * CONTROL_REFERENCE_MISMATCH}: the control reference from the header
+     * segment
+     * </ul>
+     *
+     * For other errors this method returns null. Use
+     * {@link #getSchemaTypeReference()} to get the limits that the schema
+     * defines, for example the minimum and maximum length of an element.
+     *
+     * @return the expected value, or null when none is available
+     * @throws IllegalStateException
+     *             when the current event type is not SEGMENT_ERROR or
+     *             ELEMENT_ERROR
+     *
+     * @since 1.27
+     */
+    default String getExpectedValue() {
+        return null;
+    }
+
+    /**
      * Returns the current value of the parse event as a string. This returns
      *
      * <ul>

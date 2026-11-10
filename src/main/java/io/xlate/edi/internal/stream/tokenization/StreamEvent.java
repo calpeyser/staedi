@@ -21,10 +21,17 @@ public class StreamEvent {
 
     EDIReference typeReference;
 
+    String expectedValue;
+
     StaEDIStreamLocation location;
 
     public void update(EDIStreamEvent type, EDIStreamValidationError errorType, CharSequence data, EDIReference typeReference, StaEDIStreamLocation location) {
+        update(type, errorType, data, typeReference, location, null);
+    }
+
+    public void update(EDIStreamEvent type, EDIStreamValidationError errorType, CharSequence data, EDIReference typeReference, StaEDIStreamLocation location, String expectedValue) {
         this.type = type;
+        this.expectedValue = expectedValue;
         this.errorType = errorType;
         setData(data);
         setTypeReference(typeReference);
@@ -42,6 +49,10 @@ public class StreamEvent {
 
     public EDIStreamValidationError getErrorType() {
         return errorType;
+    }
+
+    public String getExpectedValue() {
+        return expectedValue;
     }
 
     public CharBuffer getData() {

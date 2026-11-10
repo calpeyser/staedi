@@ -2290,6 +2290,35 @@ class StaEDIStreamReaderTest implements ConstantsTest {
         assertTrue(thrown.getMessage().contains("EDIE003"), thrown::getMessage);
     }
 
+    @Test
+    void testControlErrorsGiveExpectedValue() throws Exception {
+        String edi = ""
+            + "ISA*00*          *00*          *ZZ*ReceiverID     *ZZ*Sender         *200301*1430*^*00501*000000001*0*P*:~"
+            + "GS*FA*ReceiverDept*SenderDept*20200301*1430*1*X*005010~"
+            + "ST*997*0001~"
+            + "AK1*IN*1~"
+            + "AK9*A*1*1*1~"
+            + "SE*9*0002~"
+            + "GE*1*1~"
+            + "IEA*1*000000001~";
+
+        EDIInputFactory factory = EDIInputFactory.newFactory();
+        Map<EDIStreamValidationError, List<String>> found = new HashMap<>();
+
+        try (EDIStreamReader reader = factory.createEDIStreamReader(new ByteArrayInputStream(edi.getBytes()))) {
+            while (reader.hasNext()) {
+                if (reader.next() == EDIStreamEvent.ELEMENT_DATA_ERROR) {
+                    found.put(reader.getErrorType(), Arrays.asList(reader.getText(), reader.getExpectedValue()));
+                }
+            }
+        }
+
+        // SE01 says 9 segments, the transaction has 4 (ST, AK1, AK9, SE)
+        assertEquals(Arrays.asList("9", "4"), found.get(EDIStreamValidationError.CONTROL_COUNT_DOES_NOT_MATCH_ACTUAL_COUNT));
+        // SE02 says 0002, ST02 said 0001
+        assertEquals(Arrays.asList("0002", "0001"), found.get(EDIStreamValidationError.CONTROL_REFERENCE_MISMATCH));
+    }
+
     List<String> readEvents(byte[] input) throws Exception {
         EDIInputFactory factory = EDIInputFactory.newFactory();
         List<String> events = new ArrayList<>();

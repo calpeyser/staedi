@@ -166,6 +166,11 @@ class StaEDIFilteredStreamReader implements EDIStreamReader {
     }
 
     @Override
+    public String getExpectedValue() {
+        return delegate.getExpectedValue();
+    }
+
+    @Override
     public String getText() {
         return delegate.getText();
     }

@@ -81,6 +81,17 @@ class ControlUsageNode extends UsageNode {
         return Integer.toString(count).contentEquals(value.subSequence(i, len));
     }
 
+    String getExpectedValue(EDIStreamValidationError error) {
+        switch (error) {
+        case CONTROL_REFERENCE_MISMATCH:
+            return referenceValue;
+        case CONTROL_COUNT_DOES_NOT_MATCH_ACTUAL_COUNT:
+            return Integer.toString(count);
+        default:
+            return null;
+        }
+    }
+
     int incrementCount(EDIControlType.Type countType) {
         if (this.type.getCountType() == countType) {
             count++;

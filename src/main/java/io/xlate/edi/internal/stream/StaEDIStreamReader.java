@@ -393,6 +393,15 @@ public class StaEDIStreamReader implements EDIStreamReader, Configurable, Valida
         return proxy.getErrorType();
     }
 
+    @Override
+    public String getExpectedValue() {
+        requireEvent("not a valid error state",
+                     EDIStreamEvent.ELEMENT_DATA_ERROR,
+                     EDIStreamEvent.ELEMENT_OCCURRENCE_ERROR,
+                     EDIStreamEvent.SEGMENT_ERROR);
+        return proxy.getExpectedValue();
+    }
+
     private void checkTextState() {
         if (!hasText()) {
             throw new IllegalStateException("not a valid text state [" + getEventType() + ']');

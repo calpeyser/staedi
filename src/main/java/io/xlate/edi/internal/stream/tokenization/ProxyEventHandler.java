@@ -175,6 +175,10 @@ public class ProxyEventHandler implements EventHandler {
         return current(StreamEvent::getErrorType, null);
     }
 
+    public String getExpectedValue() {
+        return current(StreamEvent::getExpectedValue, null);
+    }
+
     public String getReferenceCode() {
         return current(StreamEvent::getReferenceCode, null);
     }
@@ -568,7 +572,8 @@ public class ProxyEventHandler implements EventHandler {
                          error.getError(),
                          text,
                          error.getTypeReference(),
-                         location);
+                         location,
+                         error.getExpectedValue());
         }
     }
 
@@ -618,9 +623,18 @@ public class ProxyEventHandler implements EventHandler {
                               CharSequence data,
                               EDIReference typeReference,
                               StaEDIStreamLocation location) {
+        enqueueEvent(event, error, data, typeReference, location, null);
+    }
+
+    private void enqueueEvent(EDIStreamEvent event,
+                              EDIStreamValidationError error,
+                              CharSequence data,
+                              EDIReference typeReference,
+                              StaEDIStreamLocation location,
+                              String expectedValue) {
 
         StreamEvent target = getPooledEvent();
-        target.update(event, error, data, typeReference, location);
+        target.update(event, error, data, typeReference, location, expectedValue);
 
         eventQueue.add(target);
     }

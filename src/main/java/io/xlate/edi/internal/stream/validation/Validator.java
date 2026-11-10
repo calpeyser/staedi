@@ -1253,9 +1253,14 @@ public class Validator {
             validateControlValue(segment.getParent(), position, value, errors);
         }
 
+        UsageNode loop = segment.getParent();
+
         for (EDIStreamValidationError error : errors) {
             if (this.validateCodeValues || error != INVALID_CODE_VALUE) {
-                elementErrors.add(new UsageError(element, error));
+                String expected = loop instanceof ControlUsageNode
+                        ? ((ControlUsageNode) loop).getExpectedValue(error)
+                        : null;
+                elementErrors.add(new UsageError(element, error, expected));
             }
         }
 
