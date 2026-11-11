@@ -15,6 +15,9 @@
  ******************************************************************************/
 package io.xlate.edi.internal.stream;
 
+import java.util.Arrays;
+
+import io.xlate.edi.schema.EDIType;
 import io.xlate.edi.stream.Location;
 
 public class StaEDIStreamLocation extends LocationView implements Location {
@@ -24,12 +27,23 @@ public class StaEDIStreamLocation extends LocationView implements Location {
     private boolean repeating = false;
     private int repeatCount = -1;
 
+    /*
+     * Control counts and references, indexed by the ordinal of
+     * EDIType.Type.INTERCHANGE (0), GROUP (1) and TRANSACTION (2).
+     */
+    private static final int CONTROL_SCOPES = 3;
+    private final int[] controlCounts = { -1, -1, -1 };
+    private final String[] controlReferences = new String[CONTROL_SCOPES];
+
     public StaEDIStreamLocation() {
         super();
     }
 
     public StaEDIStreamLocation(Location source) {
         super(source);
+        if (source instanceof StaEDIStreamLocation) {
+            copyControls((StaEDIStreamLocation) source);
+        }
     }
 
     @Override
@@ -57,6 +71,71 @@ public class StaEDIStreamLocation extends LocationView implements Location {
         componentPosition = source.getComponentPosition();
         elementOccurrence = source.getElementOccurrence();
         afterSegment = source.afterSegment;
+        copyControls(source);
+    }
+
+    private void copyControls(StaEDIStreamLocation source) {
+        System.arraycopy(source.controlCounts, 0, controlCounts, 0, CONTROL_SCOPES);
+        System.arraycopy(source.controlReferences, 0, controlReferences, 0, CONTROL_SCOPES);
+    }
+
+    static int controlIndex(EDIType.Type scope) {
+        if (scope != null) {
+            switch (scope) {
+            case INTERCHANGE:
+            case GROUP:
+            case TRANSACTION:
+                return scope.ordinal();
+            default:
+                break;
+            }
+        }
+        throw new IllegalArgumentException("Control scope must be INTERCHANGE, GROUP, or TRANSACTION: " + scope);
+    }
+
+    /**
+     * Index of the innermost open control structure, or -1 when none is open.
+     */
+    private int innermostControl() {
+        for (int i = CONTROL_SCOPES - 1; i >= 0; i--) {
+            if (controlCounts[i] > -1 || controlReferences[i] != null) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void clearControls() {
+        Arrays.fill(controlCounts, -1);
+        Arrays.fill(controlReferences, null);
+    }
+
+    public void setControl(EDIType.Type scope, int count, String reference) {
+        int i = controlIndex(scope);
+        controlCounts[i] = count;
+        controlReferences[i] = reference;
+    }
+
+    @Override
+    public int getControlCount(EDIType.Type scope) {
+        return controlCounts[controlIndex(scope)];
+    }
+
+    @Override
+    public int getControlCount() {
+        int i = innermostControl();
+        return i < 0 ? -1 : controlCounts[i];
+    }
+
+    @Override
+    public String getControlReference(EDIType.Type scope) {
+        return controlReferences[controlIndex(scope)];
+    }
+
+    @Override
+    public String getControlReference() {
+        int i = innermostControl();
+        return i < 0 ? null : controlReferences[i];
     }
 
     public void setElementPosition(int elementPosition) {

@@ -619,6 +619,10 @@ public class ProxyEventHandler implements EventHandler {
                               EDIReference typeReference,
                               StaEDIStreamLocation location) {
 
+        if (controlValidator != null) {
+            controlValidator.updateControls(location);
+        }
+
         StreamEvent target = getPooledEvent();
         target.update(event, error, data, typeReference, location);
 

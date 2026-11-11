@@ -483,6 +483,36 @@ public class Validator {
         }
     }
 
+    /**
+     * Copy the counts and header references of the control structures that are
+     * currently open (interchange, group, transaction) to the location.
+     */
+    public void updateControls(StaEDIStreamLocation location) {
+        location.clearControls();
+        updateControl(location, root);
+
+        for (Iterator<UsageNode> iter = loopStack.descendingIterator(); iter.hasNext();) {
+            updateControl(location, iter.next());
+        }
+    }
+
+    static void updateControl(StaEDIStreamLocation location, UsageNode node) {
+        if (node instanceof ControlUsageNode) {
+            ControlUsageNode control = (ControlUsageNode) node;
+            EDIType.Type scope = control.getControlScope();
+
+            switch (scope) {
+            case INTERCHANGE:
+            case GROUP:
+            case TRANSACTION:
+                location.setControl(scope, control.getCount(), control.getReferenceValue());
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
     void countSegment(UsageNode node, CharSequence tag) {
         int count;
 

@@ -966,6 +966,7 @@ public class StaEDIStreamWriter implements EDIStreamWriter, ElementDataHandler, 
         copy.setElementPosition(element);
         copy.setElementOccurrence(repetition);
         copy.setComponentPosition(component);
+        updateControls(copy);
 
         if (this.reporter != null) {
             this.reporter.report(error, this, copy, data, typeReference);
@@ -976,10 +977,18 @@ public class StaEDIStreamWriter implements EDIStreamWriter, ElementDataHandler, 
 
     @Override
     public void segmentError(CharSequence token, EDIReference typeReference, EDIStreamValidationError error) {
+        updateControls(location);
+
         if (this.reporter != null) {
             this.reporter.report(error, this, this.getLocation(), token, typeReference);
         } else {
             errors.add(new EDIValidationException(EDIStreamEvent.SEGMENT_ERROR, error, location, token));
+        }
+    }
+
+    private void updateControls(StaEDIStreamLocation target) {
+        if (controlValidator != null) {
+            controlValidator.updateControls(target);
         }
     }
 
